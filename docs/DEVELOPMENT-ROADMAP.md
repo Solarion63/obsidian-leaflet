@@ -7,7 +7,8 @@
 | L3 | Reset, resize and fullscreen; preserve deliberate zoom/pan | Merged; Verify #5 passed |
 | L4 | Regression tests and verification | Merged; Verify #7 passed; 14 mocked-boundary tests |
 | L5a | Local build and installation procedure | Merged; Windows build passed |
-| L5b | Dependency security maintenance | In progress; user-generated lockfile pending commit |
+| L5b.1 | XML parser and compatible security updates | Merged; Verify #11 passed; 5 audit findings remain |
+| L5b.2 | Remaining build-tool vulnerabilities | Source changes staged; npm lockfile and verification pending |
 | L5c | Obsidian runtime acceptance | Pending security review |
 | L6 | Consumer-vault marker integration (separate private project) | Planned |
 | L7 | Evaluate upstream contribution and licensing | Planned |
