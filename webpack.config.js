@@ -2,7 +2,6 @@ const path = require("path");
 const CopyPlugin = require("copy-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const webpack = require("webpack");
-const InjectPlugin = require("webpack-inject-plugin").default;
 const { config } = require("dotenv");
 
 config();

@@ -20,7 +20,12 @@ jobs:
       - run: npm ci
       - name: Image fitting regression tests
         run: node --test tests/image-fit.test.cjs
+      - name: GPX worker regression tests
+        run: node --test tests/gpx-worker.test.cjs
       - run: npm run build
+      - name: Dependency audit (report only)
+        run: npm audit
+        continue-on-error: true
       - name: Check plugin bundle
         run: |
           test -s main.js

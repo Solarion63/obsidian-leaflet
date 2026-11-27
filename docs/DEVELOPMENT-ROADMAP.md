@@ -6,7 +6,9 @@
 | L2 | Optional image fit-to-frame at initial render | Merged; Verify #3 and #4 passed; runtime pending |
 | L3 | Reset, resize and fullscreen; preserve deliberate zoom/pan | Merged; Verify #5 passed |
 | L4 | Regression tests and verification | Merged; Verify #7 passed; 14 mocked-boundary tests |
-| L5 | Controlled local installation and Obsidian runtime acceptance | Procedure proposed; user runtime pending |
+| L5a | Local build and installation procedure | Merged; Windows build passed |
+| L5b | Dependency security maintenance | In progress; user-generated lockfile pending commit |
+| L5c | Obsidian runtime acceptance | Pending security review |
 | L6 | Consumer-vault marker integration (separate private project) | Planned |
 | L7 | Evaluate upstream contribution and licensing | Planned |
 
