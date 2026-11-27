@@ -1,5 +1,5 @@
 import { GPX_OPTIONS, GPX_Data, Coordinate } from "../types/gpx";
-import { DOMParser } from "xmldom";
+import { DOMParser } from "@xmldom/xmldom";
 
 const ctx: Worker = self as any;
 
