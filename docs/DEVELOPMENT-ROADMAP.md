@@ -8,8 +8,8 @@
 | L4 | Regression tests and verification | Merged; Verify #7 passed; 14 mocked-boundary tests |
 | L5a | Local build and installation procedure | Merged; Windows build passed |
 | L5b.1 | XML parser and compatible security updates | Merged; Verify #11 passed; 5 audit findings remain |
-| L5b.2 | Remaining build-tool vulnerabilities | Source changes staged; npm lockfile and verification pending |
-| L5c | Obsidian runtime acceptance | Pending security review |
+| L5b.2 | Remaining build-tool vulnerabilities | Merged; Verify #13 passed; local audit zero |
+| L5c | Obsidian runtime acceptance | Metraith 12/12 passed; broader compatibility pending |
 | L6 | Consumer-vault marker integration (separate private project) | Planned |
 | L7 | Evaluate upstream contribution and licensing | Planned |
 
