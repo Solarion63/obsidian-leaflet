@@ -5,8 +5,8 @@
 | L1 | Reproduce upstream build; read-only CI; checkpoint | Merged; Verify #1 passed |
 | L2 | Optional image fit-to-frame at initial render | Merged; Verify #3 and #4 passed; runtime pending |
 | L3 | Reset, resize and fullscreen; preserve deliberate zoom/pan | Merged; Verify #5 passed |
-| L4 | Regression tests and verification | Proposed; 14 mocked-boundary tests; real runtime pending |
-| L5 | Controlled local installation and Obsidian runtime acceptance | Planned |
+| L4 | Regression tests and verification | Merged; Verify #7 passed; 14 mocked-boundary tests |
+| L5 | Controlled local installation and Obsidian runtime acceptance | Procedure proposed; user runtime pending |
 | L6 | Consumer-vault marker integration (separate private project) | Planned |
 | L7 | Evaluate upstream contribution and licensing | Planned |
 
