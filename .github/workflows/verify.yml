@@ -1,0 +1,27 @@
+name: Verify
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm run build
+      - name: Check plugin bundle
+        run: |
+          test -s main.js
+          test -s styles.css
+          node --check main.js
+          node -e "const m=require('./manifest.json'); const p=require('./package.json'); if(m.id!=='obsidian-leaflet-plugin'||m.version!==p.version) process.exit(1)"
