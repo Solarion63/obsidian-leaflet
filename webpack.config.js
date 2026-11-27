@@ -1,5 +1,5 @@
 const path = require("path");
-const CopyPlugin = require("copy-webpack-plugin");
+const fs = require("fs");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const webpack = require("webpack");
 const { config } = require("dotenv");
@@ -51,7 +51,6 @@ module.exports = {
                 test: /\.tsx?$/,
                 loader: "esbuild-loader",
                 options: {
-                    loader: "tsx", // Or 'ts' if you don't need tsx
                     target: "es2020"
                 }
             },
@@ -74,9 +73,15 @@ module.exports = {
         ]
     },
     plugins: [
-        new CopyPlugin({
-            patterns: [{ from: "./manifest.json", to: "." }]
-        }),
+        {
+            apply(compiler) {
+                compiler.hooks.afterEmit.tap("CopyLocalManifest", () => {
+                    const source = path.resolve(__dirname, "manifest.json");
+                    const destination = path.resolve(compiler.options.output.path, "manifest.json");
+                    if (source !== destination) fs.copyFileSync(source, destination);
+                });
+            }
+        },
         new webpack.optimize.LimitChunkCountPlugin({
             maxChunks: 1
         }),
