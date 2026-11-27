@@ -18,6 +18,8 @@ jobs:
         with:
           node-version: '22'
       - run: npm ci
+      - name: Image fitting regression tests
+        run: node --test tests/image-fit.test.cjs
       - run: npm run build
       - name: Check plugin bundle
         run: |
