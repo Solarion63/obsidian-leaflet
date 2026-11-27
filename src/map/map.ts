@@ -1626,8 +1626,12 @@ export class ImageMap extends BaseMap {
         if (!this.usesImageFit || !this.rendered ||
             !this.contentEl.isConnected) return;
         if (this.tryInitialImageFit()) return;
-        if (this.options.fitOnResize === false || !this.overview ||
-            !this.fittedSize) return;
+        if (this.options.fitOnResize === false) {
+            if (this.fittedSize && (this.contentEl.clientWidth !== this.fittedSize.width ||
+                this.contentEl.clientHeight !== this.fittedSize.height)) this.overview = false;
+            return;
+        }
+        if (!this.overview || !this.fittedSize) return;
         if (this.contentEl.clientWidth !== this.fittedSize.width ||
             this.contentEl.clientHeight !== this.fittedSize.height) this.fitImage();
     };
