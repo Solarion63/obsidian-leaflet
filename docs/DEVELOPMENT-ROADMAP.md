@@ -2,8 +2,8 @@
 
 | Increment | Scope | Status |
 |---|---|---|
-| L1 | Reproduce upstream build; read-only CI; checkpoint | Proposed |
-| L2 | Optional image fit-to-frame at initial render | Planned |
+| L1 | Reproduce upstream build; read-only CI; checkpoint | Merged; Verify #1 passed |
+| L2 | Optional image fit-to-frame at initial render | Proposed; build and runtime acceptance pending |
 | L3 | Reset, resize and fullscreen; preserve deliberate zoom/pan | Planned |
 | L4 | Regression tests and verification | Planned |
 | L5 | Controlled local installation and Obsidian runtime acceptance | Planned |

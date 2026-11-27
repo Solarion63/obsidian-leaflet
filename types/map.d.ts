@@ -56,6 +56,8 @@ export interface DivIconMarkerOptions extends L.MarkerOptions {
     icon: MarkerDivIcon;
 }
 export interface LeafletMapOptions {
+    autoFit?: boolean;
+    fitPadding?: number;
     bounds?: [[number, number], [number, number]];
     context?: string;
     darkMode?: boolean;

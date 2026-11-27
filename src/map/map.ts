@@ -1561,6 +1561,38 @@ export class ImageMap extends BaseMap {
     mapLayers: LayerGroup<L.ImageOverlay>[] = [];
     type: "image" = "image";
     readyToRender: boolean;
+    private initialImageFitDone = false;
+
+    /** Fit once, when both the active image and a measurable viewport exist.
+     * Explicit feature/marker/distance zoom modes retain upstream precedence.
+     * Do not alter the CRS, image bounds, or stored marker coordinates.
+     */
+    tryInitialImageFit(): boolean {
+        if (this.initialImageFitDone || !this.options.autoFit ||
+            this.options.zoomFeatures || this.options.zoomMarkers ||
+            this.renderOptions?.zoomDistance || !this.rendered ||
+            !this.currentLayer || !this.contentEl.isConnected) return false;
+
+        const width = this.contentEl.clientWidth;
+        const height = this.contentEl.clientHeight;
+        const bounds = this.currentLayer.getBounds();
+        if (width <= 0 || height <= 0 || !bounds.isValid()) return false;
+        const configured = this.options.fitPadding;
+        const requested = Number.isFinite(configured) && configured >= 0
+            ? configured : 12;
+        const padding = Math.min(requested, Math.max(0, (Math.min(width, height) - 1) / 2));
+        this.leafletInstance.invalidateSize({ pan: false, animate: false });
+        this.leafletInstance.fitBounds(bounds, {
+            padding: L.point(padding, padding),
+            animate: false
+        });
+        const center = this.leafletInstance.getCenter();
+        this.initialCoords = [center.lat, center.lng];
+        this.zoom.default = this.leafletInstance.getZoom();
+        this.initialImageFitDone = true;
+        return true;
+    }
+
     get plugin() {
         return this.renderer.plugin;
     }
@@ -1679,6 +1711,7 @@ export class ImageMap extends BaseMap {
                     (Date.now() - this.start) / 1000
                 } seconds.`
             );
+            this.tryInitialImageFit();
             this.trigger("rendered");
         });
 

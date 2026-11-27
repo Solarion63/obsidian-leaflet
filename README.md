@@ -40,6 +40,10 @@ darkMode: true
 ```
 ````
 
+## Fork preview: initial image fitting
+
+For image maps, add `autoFit: true` to fit the active image on first visible render. Optional `fitPadding` (default 12 pixels per side) adds space around the image. Existing min/max zoom and zoom snapping still apply; use a sufficiently low `minZoom` for large images or custom bounds and a finer `zoomDelta` (e.g. 0.25) for closer fits. Existing feature, marker and distance zoom modes take precedence. Geographic maps and maps without opt-in are unchanged. Reset uses the fitted initial view; responsive reset/resize/fullscreen refitting is planned, not included here. The image coordinate system is unchanged. Preview source only; runtime acceptance pending.
+
 ## Options
 
 > :pencil: Using Links

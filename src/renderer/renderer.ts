@@ -139,6 +139,8 @@ export class LeafletRenderer extends MarkdownRenderChild {
         }
 
         this.options = {
+            autoFit: String(this.params.autoFit) === "true",
+            fitPadding: this.params.fitPadding == null ? 12 : Number(this.params.fitPadding),
             bounds: this.params.bounds,
             context: this.sourcePath,
             darkMode: `${this.params.darkMode}` === "true",
@@ -193,6 +195,7 @@ export class LeafletRenderer extends MarkdownRenderChild {
             }
             if (this.map && this.map.rendered) {
                 this.map.leafletInstance.invalidateSize();
+                if (this.map instanceof ImageMap) this.map.tryInitialImageFit();
             }
         });
         this.mapBuilt = this.buildMap();
@@ -357,6 +360,7 @@ export class LeafletRenderer extends MarkdownRenderChild {
         // added because bound's get somehow messed up in the render process and only normalize when calling this.
         // haven't found the cause of the issue, but that seems to work around it. see issue #412
         this.map.leafletInstance.invalidateSize();
+        if (this.map instanceof ImageMap) this.map.tryInitialImageFit();
 
         if (!this.parentEl.contains(this.containerEl)) {
             this.map.log(
