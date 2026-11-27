@@ -23,6 +23,7 @@ export interface MapInterface {
 export interface BlockParameters {
     autoFit?: boolean;
     fitPadding?: number;
+    fitOnResize?: boolean;
     id?: string;
     image?: string | string[];
     layers?: string[];

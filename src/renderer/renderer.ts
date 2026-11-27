@@ -140,6 +140,7 @@ export class LeafletRenderer extends MarkdownRenderChild {
 
         this.options = {
             autoFit: String(this.params.autoFit) === "true",
+            fitOnResize: this.params.fitOnResize == null || String(this.params.fitOnResize) === "true",
             fitPadding: this.params.fitPadding == null ? 12 : Number(this.params.fitPadding),
             bounds: this.params.bounds,
             context: this.sourcePath,

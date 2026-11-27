@@ -1562,16 +1562,21 @@ export class ImageMap extends BaseMap {
     type: "image" = "image";
     readyToRender: boolean;
     private initialImageFitDone = false;
+    private overview = false;
+    private fitting = false;
+    private fittedSize?: { width: number; height: number };
+    private imageResize?: ResizeObserver;
 
-    /** Fit once, when both the active image and a measurable viewport exist.
-     * Explicit feature/marker/distance zoom modes retain upstream precedence.
-     * Do not alter the CRS, image bounds, or stored marker coordinates.
-     */
-    tryInitialImageFit(): boolean {
-        if (this.initialImageFitDone || !this.options.autoFit ||
-            this.options.zoomFeatures || this.options.zoomMarkers ||
-            this.renderOptions?.zoomDistance || !this.rendered ||
-            !this.currentLayer || !this.contentEl.isConnected) return false;
+    private get usesImageFit(): boolean {
+        return !!this.options.autoFit && !this.options.zoomFeatures &&
+            !this.options.zoomMarkers && !this.renderOptions?.zoomDistance &&
+            !this.zoomDistance;
+    }
+
+    /** Refit actual active image bounds without changing the coordinate system. */
+    private fitImage(): boolean {
+        if (!this.usesImageFit || !this.rendered || !this.currentLayer ||
+            !this.contentEl.isConnected || this.fitting) return false;
 
         const width = this.contentEl.clientWidth;
         const height = this.contentEl.clientHeight;
@@ -1581,16 +1586,69 @@ export class ImageMap extends BaseMap {
         const requested = Number.isFinite(configured) && configured >= 0
             ? configured : 12;
         const padding = Math.min(requested, Math.max(0, (Math.min(width, height) - 1) / 2));
-        this.leafletInstance.invalidateSize({ pan: false, animate: false });
-        this.leafletInstance.fitBounds(bounds, {
-            padding: L.point(padding, padding),
-            animate: false
-        });
-        const center = this.leafletInstance.getCenter();
-        this.initialCoords = [center.lat, center.lng];
-        this.zoom.default = this.leafletInstance.getZoom();
-        this.initialImageFitDone = true;
-        return true;
+        this.fitting = true;
+        try {
+            this.leafletInstance.invalidateSize({ pan: false, animate: false });
+            this.leafletInstance.fitBounds(bounds, {
+                padding: L.point(padding, padding),
+                animate: false
+            });
+            const center = this.leafletInstance.getCenter();
+            this.initialCoords = [center.lat, center.lng];
+            this.zoom.default = this.leafletInstance.getZoom();
+            this.fittedSize = { width, height };
+            this.initialImageFitDone = true;
+            this.overview = true;
+            return true;
+        } finally {
+            this.fitting = false;
+        }
+    }
+
+    tryInitialImageFit(): boolean {
+        return !this.initialImageFitDone && this.fitImage();
+    }
+
+    /** Ignore resize-generated move events; deliberate navigation leaves overview. */
+    private trackImageView = () => {
+        if (!this.usesImageFit || !this.overview || this.fitting ||
+            !this.fittedSize || !this.rendered) return;
+        if (this.contentEl.clientWidth !== this.fittedSize.width ||
+            this.contentEl.clientHeight !== this.fittedSize.height) return;
+        const map = this.leafletInstance;
+        if (Math.abs(map.getZoom() - this.zoom.default) > 1e-8 ||
+            map.project(map.getCenter()).distanceTo(map.project(this.initialCoords)) > 1) {
+            this.overview = false;
+        }
+    };
+
+    private handleImageResize = () => {
+        if (!this.usesImageFit || !this.rendered ||
+            !this.contentEl.isConnected) return;
+        if (this.tryInitialImageFit()) return;
+        if (this.options.fitOnResize === false || !this.overview ||
+            !this.fittedSize) return;
+        if (this.contentEl.clientWidth !== this.fittedSize.width ||
+            this.contentEl.clientHeight !== this.fittedSize.height) this.fitImage();
+    };
+
+    resetZoom() {
+        if (this.usesImageFit) {
+            // Hidden view: defer the requested overview until the viewport is measurable.
+            if (!this.fitImage()) {
+                this.initialImageFitDone = false;
+                this.overview = false;
+            }
+            return;
+        }
+        super.resetZoom();
+    }
+
+    remove() {
+        this.imageResize?.disconnect();
+        this.leafletInstance.off("moveend zoomend", this.trackImageView);
+        this.leafletInstance.off("fullscreenchange", this.handleImageResize);
+        super.remove();
     }
 
     get plugin() {
@@ -1603,6 +1661,13 @@ export class ImageMap extends BaseMap {
     ) {
         super(renderer, options);
         this.createMap();
+        if (this.options.autoFit) {
+            this.leafletInstance.on("moveend zoomend", this.trackImageView);
+            this.leafletInstance.on("fullscreenchange", this.handleImageResize);
+            // Observe the actual map element, including fullscreen layout changes.
+            this.imageResize = new ResizeObserver(this.handleImageResize);
+            this.imageResize.observe(this.contentEl);
+        }
     }
 
     get bounds() {

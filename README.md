@@ -42,7 +42,7 @@ darkMode: true
 
 ## Fork preview: initial image fitting
 
-For image maps, add `autoFit: true` to fit the active image on first visible render. Optional `fitPadding` (default 12 pixels per side) adds space around the image. Existing min/max zoom and zoom snapping still apply; use a sufficiently low `minZoom` for large images or custom bounds and a finer `zoomDelta` (e.g. 0.25) for closer fits. Existing feature, marker and distance zoom modes take precedence. Geographic maps and maps without opt-in are unchanged. Reset uses the fitted initial view; responsive reset/resize/fullscreen refitting is planned, not included here. The image coordinate system is unchanged. Preview source only; runtime acceptance pending.
+For image maps, add `autoFit: true` to fit the active image on first visible render. Optional `fitPadding` (default 12 pixels per side) adds space around the image. Existing min/max zoom and zoom snapping still apply; use a sufficiently low `minZoom` for large images or custom bounds and a finer `zoomDelta` (e.g. 0.25) for closer fits. Existing feature, marker and distance zoom modes take precedence. Geographic maps and maps without opt-in are unchanged. Reset recalculates the active image fit for the current viewport; switching image layers also resets to the new image overview. With `fitOnResize: true` (default when autoFit is enabled), resizing and fullscreen transitions refit the overview but preserve deliberate zoom/pan detail views until Reset. Set `fitOnResize: false` to disable responsive refitting; initial fit and Reset still work. The image coordinate system is unchanged. Preview source only; runtime acceptance pending.
 
 ## Options
 
