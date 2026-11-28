@@ -244,6 +244,9 @@ export class LeafletRenderer extends MarkdownRenderChild {
                 const margin = `${(b.width - width) / 2}px`;
                 if (el.style.width !== `${width}px`) el.style.width = `${width}px`;
                 el.style.maxWidth = 'none';
+                // Live Preview code-block wrappers can clip a legitimately expanded map.
+                // Mark only eligible blocks, after the existing nested-content guard.
+                el.classList.toggle('leaflet-pane-width-active', width > b.width);
                 el.style.marginLeft = margin;
                 el.style.marginRight = margin;
             }

@@ -144,6 +144,14 @@
     margin: 0 auto;
 }
 
+/* Only opt-in expanded map widgets may escape their Live Preview code-block wrapper.
+ * Keep the editor scroller and Leaflet's own map clipping intact. */
+.markdown-source-view.mod-cm6 .cm-embed-block:has(.block-language-leaflet.leaflet-pane-width-active),
+.markdown-source-view.mod-cm6 .cm-preview-code-block:has(.block-language-leaflet.leaflet-pane-width-active) {
+    overflow: visible !important;
+    contain: none !important;
+}
+
 .block-language-leaflet > .leaflet-container {
     z-index: 0;
     background-color: var(--background-secondary-alt);
