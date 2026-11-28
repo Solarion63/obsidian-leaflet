@@ -961,3 +961,7 @@ If you're using Obsidian to run/plan a TTRPG, you may find my other plugin usefu
 -   [Initiative Tracker](https://github.com/valentine195/obsidian-initiative-tracker) - Initiative Tracker view in Obsidian
 
 <a href="https://www.buymeacoffee.com/valentine195"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=☕&slug=valentine195&button_colour=e3e7ef&font_colour=262626&font_family=Inter&outline_colour=262626&coffee_colour=ff0000"></a>
+
+### Automatic viewport height (inline image maps)
+
+Set `height: auto` to follow the visible note pane height independently of width. This mode reserves 76 CSS pixels for context, has a minimum height of 120 pixels, and uses a 500px fallback until a visible top-level pane is available. It takes precedence over `aspectRatio: auto` and `preserveAspect`. Nested blocks retain the fallback. Combine with `fullWidth: true` and `autoFit: true` as needed. Existing fixed/percentage heights and native aspect layouts are unchanged. Obsidian readable-line-length clipping must be addressed separately by note layout CSS or the vault setting.

@@ -43,7 +43,7 @@ import t from "../l10n/locale";
 import { LeafletMapView } from "src/map/view";
 import { Marker, Overlay } from "src/layer";
 import { promisify } from "util";
-import { imageAspect, aspectHeight, expandedWidth } from "./image-layout";
+import { imageAspect, aspectHeight, expandedWidth, viewportHeight } from "./image-layout";
 
 declare module "leaflet" {
     interface Map {
@@ -85,6 +85,7 @@ export class LeafletRenderer extends MarkdownRenderChild {
     preserveAspect: boolean;
     aspect: number;
     private nativeAspect = false;
+    private autoHeight = false;
     private fullWidth = false;
     private imageRatio?: number;
     private layoutPane?: HTMLElement;
@@ -157,7 +158,7 @@ export class LeafletRenderer extends MarkdownRenderChild {
             geojsonColor: getHex(this.params.geojsonColor),
             gpxColor: getHex(this.params.gpxColor),
             hasAdditional,
-            height: this.getHeight(this.params.height),
+            height: this.getHeight(this.params.height === "auto" && this.params.image !== "real" && !this.params.isMapView && !this.params.isInitiativeView ? "500px" : this.params.height),
             id: this.params.id,
             imageOverlays: [],
             isInitiativeView: this.params.isInitiativeView,
@@ -185,9 +186,10 @@ export class LeafletRenderer extends MarkdownRenderChild {
         };
 
         const inlineImage = this.options.type === "image" && !this.params.isMapView && !this.params.isInitiativeView;
-        this.nativeAspect = inlineImage && this.params.aspectRatio === "auto";
+        this.autoHeight = inlineImage && this.params.height === "auto";
+        this.nativeAspect = inlineImage && !this.autoHeight && this.params.aspectRatio === "auto";
         this.fullWidth = inlineImage && String(this.params.fullWidth) === "true";
-        this.preserveAspect = !this.nativeAspect && (this.params.preserveAspect ?? false);
+        this.preserveAspect = !this.autoHeight && !this.nativeAspect && (this.params.preserveAspect ?? false);
 
         this.containerEl.style.height = this.options.height;
         this.containerEl.style.width = this.params.width ?? "100%";
@@ -203,7 +205,7 @@ export class LeafletRenderer extends MarkdownRenderChild {
                 const height = bound.width / this.aspect;
                 this.map.contentEl.style.height = `${height}px`;
             }
-            if (this.map && this.map.rendered) {
+            if (this.map && this.map.rendered && bound.width > 0 && bound.height > 0) {
                 this.map.leafletInstance.invalidateSize();
                 if (this.map instanceof ImageMap) this.map.tryInitialImageFit();
             }
@@ -215,7 +217,7 @@ export class LeafletRenderer extends MarkdownRenderChild {
     }
 
     private observeLayoutPane() {
-        if (!this.fullWidth || this.layoutPane) return;
+        if ((!this.fullWidth && !this.autoHeight) || this.layoutPane) return;
         const el = this.containerEl;
         // Do not break out of embeds, callouts, lists or tables.
         if (el.closest('.markdown-embed, .callout, li, td, th, blockquote')) return;
@@ -227,13 +229,13 @@ export class LeafletRenderer extends MarkdownRenderChild {
     }
 
     private updateImageLayout() {
-        if (!this.nativeAspect && !this.fullWidth) return;
+        if (!this.nativeAspect && !this.fullWidth && !this.autoHeight) return;
         const el = this.containerEl;
-        if (!el.isConnected || this.map?.isFullscreen) return;
+        if (!el.isConnected || !el.clientWidth || !el.clientHeight || this.map?.isFullscreen) return;
         this.observeLayoutPane();
         const pane = this.layoutPane;
         const parent = el.parentElement;
-        if (pane && parent) {
+        if (this.fullWidth && pane && parent) {
             const p = pane.getBoundingClientRect();
             const b = parent.getBoundingClientRect();
             const style = getComputedStyle(pane);
@@ -248,8 +250,10 @@ export class LeafletRenderer extends MarkdownRenderChild {
                 el.style.marginRight = margin;
             }
         }
-        if (this.nativeAspect && this.imageRatio) {
-            const height = aspectHeight(el.clientWidth, this.imageRatio);
+        if (this.autoHeight || (this.nativeAspect && this.imageRatio)) {
+            const height = this.autoHeight
+                ? viewportHeight(pane?.clientHeight ?? 0)
+                : aspectHeight(el.clientWidth, this.imageRatio);
             if (height !== undefined) {
                 const value = `${height}px`;
                 if (el.style.height !== value) el.style.height = value;
@@ -368,7 +372,7 @@ export class LeafletRenderer extends MarkdownRenderChild {
             this.map.on("first-layer-ready", updateAspect);
             this.map.leafletInstance.on("baselayerchange", updateAspect);
         }
-        if (this.nativeAspect || this.fullWidth) {
+        if (this.nativeAspect || this.fullWidth || this.autoHeight) {
             const updateLayout = () => this.updateImageLayout();
             this.map.leafletInstance.on("fullscreenchange", updateLayout);
             this.map.on("removed", () => this.map.leafletInstance.off("fullscreenchange", updateLayout));

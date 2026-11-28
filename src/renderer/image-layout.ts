@@ -18,3 +18,9 @@ export function expandedWidth(blockLeft: number, blockWidth: number, paneLeft: n
     const available = Math.floor(2 * Math.min(center - paneLeft, paneRight - center));
     return available > 0 ? Math.min(Math.floor(blockWidth + Math.max(0, available - blockWidth)), available) : undefined;
 }
+
+/** Use the visible pane height, reserving room for note context. Hidden panes defer. */
+export function viewportHeight(paneHeight: number): number | undefined {
+    if (!Number.isFinite(paneHeight) || paneHeight <= 0) return undefined;
+    return Math.max(120, Math.floor(paneHeight - 76));
+}
