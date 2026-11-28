@@ -57,3 +57,6 @@ Record Obsidian version, installed upstream version before replacement, commit S
 
 ## Rollback
 Close Obsidian. Copy main.js, manifest.json, styles.css from the backup directory into the existing plugin directory, leaving current data.json alone. If settings have become incompatible, preserve current folder separately and restore full backup only after review (this may discard new markers/settings). Reopen Obsidian. Remove autoFit/fitPadding/fitOnResize from test notes or restore prior note revision if desired.
+
+## L6b Live Preview regression acceptance
+With an opt-in full-width landscape map, cold-start directly into saved Live Preview; verify entire frame and controls visible and clickable, native aspect correct, text width unchanged. Switch Reading View and Live Preview twice, close/reopen note, restart application, resize pane and toggle sidebar, check fullscreen/reset and intentional zoom/pan. Check nearby ordinary code blocks, nested maps, fixed-width portrait maps, and existing marker navigation; no unexpected console errors. If failed, record ancestor clipping and computed bounds before changing CSS. No claim of runtime success from CI alone.
