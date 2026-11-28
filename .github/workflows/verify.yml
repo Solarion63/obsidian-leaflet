@@ -20,6 +20,8 @@ jobs:
       - run: npm ci
       - name: Image fitting regression tests
         run: node --test tests/image-fit.test.cjs
+      - name: Image layout regression tests
+        run: node --test tests/image-layout.test.cjs
       - name: GPX worker regression tests
         run: node --test tests/gpx-worker.test.cjs
       - run: npm run build

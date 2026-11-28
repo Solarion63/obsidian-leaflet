@@ -44,6 +44,19 @@ darkMode: true
 
 For image maps, add `autoFit: true` to fit the active image on first visible render. Optional `fitPadding` (default 12 pixels per side) adds space around the image. Existing min/max zoom and zoom snapping still apply; use a sufficiently low `minZoom` for large images or custom bounds and a finer `zoomDelta` (e.g. 0.25) for closer fits. Existing feature, marker and distance zoom modes take precedence. Geographic maps and maps without opt-in are unchanged. Reset recalculates the active image fit for the current viewport; switching image layers also resets to the new image overview. With `fitOnResize: true` (default when autoFit is enabled), resizing and fullscreen transitions refit the overview but preserve deliberate zoom/pan detail views until Reset. Set `fitOnResize: false` to disable responsive refitting; initial fit and Reset still work. The image coordinate system is unchanged. Preview source only; runtime acceptance pending.
 
+## Fork preview: image block layout
+
+For inline image maps only, `aspectRatio: auto` sizes the map block from the native active image proportions, recalculating when the pane width changes. It overrides `preserveAspect`; `height` is the fallback until dimensions and width are available. `fullWidth: true` optionally expands the map symmetrically into available note-pane space without changing the text width; nested embeds, callouts, lists and tables retain their normal width. Geographic maps and dedicated map views retain existing layout. Fullscreen is controlled by Leaflet. These options do not modify image pixels, bounds, markers or zoom limits. Browser/theme-specific layout and fullscreen behavior require runtime validation.
+
+```leaflet
+id: example-landscape
+image: [[Image.jpg]]
+height: 500px
+aspectRatio: auto
+fullWidth: true
+autoFit: true
+```
+
 ## Options
 
 > :pencil: Using Links

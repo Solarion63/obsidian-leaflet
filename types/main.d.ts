@@ -76,6 +76,8 @@ export interface BlockParameters {
     isInitiativeView?: boolean;
     draw?: boolean;
     preserveAspect?: boolean;
+    aspectRatio?: "auto";
+    fullWidth?: boolean;
     noUI?: boolean;
     width?: string;
     recenter?: boolean;

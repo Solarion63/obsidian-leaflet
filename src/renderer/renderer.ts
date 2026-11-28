@@ -43,6 +43,7 @@ import t from "../l10n/locale";
 import { LeafletMapView } from "src/map/view";
 import { Marker, Overlay } from "src/layer";
 import { promisify } from "util";
+import { imageAspect, aspectHeight, expandedWidth } from "./image-layout";
 
 declare module "leaflet" {
     interface Map {
@@ -83,6 +84,10 @@ export class LeafletRenderer extends MarkdownRenderChild {
     view: MarkdownView | LeafletMapView;
     preserveAspect: boolean;
     aspect: number;
+    private nativeAspect = false;
+    private fullWidth = false;
+    private imageRatio?: number;
+    private layoutPane?: HTMLElement;
     constructor(
         public plugin: ObsidianLeaflet,
         private sourcePath: string,
@@ -179,15 +184,19 @@ export class LeafletRenderer extends MarkdownRenderChild {
             zoomMarkers: this.params.showAllMarkers
         };
 
-        this.preserveAspect = this.params.preserveAspect ?? false;
+        const inlineImage = this.options.type === "image" && !this.params.isMapView && !this.params.isInitiativeView;
+        this.nativeAspect = inlineImage && this.params.aspectRatio === "auto";
+        this.fullWidth = inlineImage && String(this.params.fullWidth) === "true";
+        this.preserveAspect = !this.nativeAspect && (this.params.preserveAspect ?? false);
 
         this.containerEl.style.height = this.options.height;
         this.containerEl.style.width = this.params.width ?? "100%";
         this.containerEl.style.backgroundColor = "var(--background-secondary)";
 
         this.resize = new ResizeObserver(() => {
+            this.updateImageLayout();
             const bound = this.containerEl.getBoundingClientRect();
-            if (this.preserveAspect && bound.width > 0 && bound.height > 0) {
+            if (this.map && this.preserveAspect && bound.width > 0 && bound.height > 0) {
                 if (this.aspect == undefined) {
                     this.aspect = bound.width / bound.height;
                 }
@@ -202,6 +211,57 @@ export class LeafletRenderer extends MarkdownRenderChild {
         this.mapBuilt = this.buildMap();
 
         this.resize.observe(this.containerEl);
+        this.observeLayoutPane();
+    }
+
+    private observeLayoutPane() {
+        if (!this.fullWidth || this.layoutPane) return;
+        const el = this.containerEl;
+        // Do not break out of embeds, callouts, lists or tables.
+        if (el.closest('.markdown-embed, .callout, li, td, th, blockquote')) return;
+        const pane = el.closest<HTMLElement>('.markdown-preview-view, .cm-scroller');
+        if (!pane || !el.parentElement) return;
+        this.layoutPane = pane;
+        this.resize.observe(pane);
+        this.resize.observe(el.parentElement);
+    }
+
+    private updateImageLayout() {
+        if (!this.nativeAspect && !this.fullWidth) return;
+        const el = this.containerEl;
+        if (!el.isConnected || this.map?.isFullscreen) return;
+        this.observeLayoutPane();
+        const pane = this.layoutPane;
+        const parent = el.parentElement;
+        if (pane && parent) {
+            const p = pane.getBoundingClientRect();
+            const b = parent.getBoundingClientRect();
+            const style = getComputedStyle(pane);
+            const left = p.left + pane.clientLeft + (parseFloat(style.paddingLeft) || 0);
+            const right = p.left + pane.clientLeft + pane.clientWidth - (parseFloat(style.paddingRight) || 0);
+            const width = expandedWidth(b.left, b.width, left, right);
+            if (width !== undefined) {
+                const margin = `${(b.width - width) / 2}px`;
+                if (el.style.width !== `${width}px`) el.style.width = `${width}px`;
+                el.style.maxWidth = 'none';
+                el.style.marginLeft = margin;
+                el.style.marginRight = margin;
+            }
+        }
+        if (this.nativeAspect && this.imageRatio) {
+            const height = aspectHeight(el.clientWidth, this.imageRatio);
+            if (height !== undefined) {
+                const value = `${height}px`;
+                if (el.style.height !== value) el.style.height = value;
+                if (this.map && this.map.contentEl.style.height !== value) this.map.contentEl.style.height = value;
+            }
+        }
+    }
+
+    private setNativeImageAspect(width: number, height: number) {
+        if (!this.nativeAspect) return;
+        this.imageRatio = imageAspect(width, height);
+        this.updateImageLayout();
     }
     modifiedSource = this.source;
     hasChangedSource: boolean = false;
@@ -300,6 +360,19 @@ export class LeafletRenderer extends MarkdownRenderChild {
             this.loader.loadImage(this.map.id, [this.options.layers[0]]);
         }
 
+        if (this.nativeAspect && this.map instanceof ImageMap) {
+            const updateAspect = () => {
+                const dimensions = this.map.currentGroup?.dimensions;
+                if (dimensions) this.setNativeImageAspect(dimensions[0], dimensions[1]);
+            };
+            this.map.on("first-layer-ready", updateAspect);
+            this.map.leafletInstance.on("baselayerchange", updateAspect);
+        }
+        if (this.nativeAspect || this.fullWidth) {
+            const updateLayout = () => this.updateImageLayout();
+            this.map.leafletInstance.on("fullscreenchange", updateLayout);
+            this.map.on("removed", () => this.map.leafletInstance.off("fullscreenchange", updateLayout));
+        }
         this.map.on("removed", () => this.resize.disconnect());
         this.map.on(
             "should-save",
@@ -358,6 +431,7 @@ export class LeafletRenderer extends MarkdownRenderChild {
         await this.mapBuilt;
         this.map.log("MarkdownRenderChild loaded. Appending map.");
         this.containerEl.appendChild(this.map.contentEl);
+        this.updateImageLayout();
         // added because bound's get somehow messed up in the render process and only normalize when calling this.
         // haven't found the cause of the issue, but that seems to work around it. see issue #412
         this.map.leafletInstance.invalidateSize();
