@@ -21,3 +21,6 @@ Landscape and portrait synthetic images, narrow and wide panes, initially hidden
 
 ## Workflow
 Branch from current main, preserve upstream attribution and minimize diffs. Update DEVELOPMENT-STATUS.md with verified baseline, exact source scope, blockers and next action. PR review, exact-head Verify, merge only after approval. Build artifacts retained locally or explicitly requested for testing, no routine CI artifact upload. Use original plugin ID only in a controlled backed-up installation; avoid installing both variants simultaneously.
+
+## L6a runtime acceptance
+PR #9 merged at ab3f623e8a5a401495d17753531667109b191e4d; Verify #17 passed (46100880932). Initial local test used outdated build; corrected by updating main, rebuilding and reinstalling. GM subsequently reported 12/12 passed: native landscape proportions, width breakout, unchanged text width, undistorted fit, Reading View, Live Preview, pane resizing, detail preservation, reset, fullscreen, existing portrait map and all markers unchanged, no unexpected Leaflet console errors. Scope is tested local installation and theme, not all Obsidian layouts. Hidden panes, layer switches, geographic and nested layout compatibility still outstanding; licensing review remains open. No private assets or binaries.
